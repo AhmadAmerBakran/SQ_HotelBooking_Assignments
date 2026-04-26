@@ -1,0 +1,225 @@
+{
+  "info": {
+    "_postman_id": "36c8ac6a-fdad-4191-9383-1e2b71082f38",
+    "name": "HotelBooking_CreateBooking_AssignmentPart2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:5001"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create booking - valid future period",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"startDate\": \"{{validStartDate}}\",\n  \"endDate\": \"{{validEndDate}}\",\n  \"customerId\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Bookings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Bookings"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 201', function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create booking - all rooms occupied",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"startDate\": \"{{occupiedStartDate}}\",\n  \"endDate\": \"{{occupiedEndDate}}\",\n  \"customerId\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Bookings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Bookings"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 409', function () { pm.response.to.have.status(409); });",
+              "pm.test('Conflict message is returned', function () { pm.expect(pm.response.text()).to.include('All rooms are occupied'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create booking - start date today",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"startDate\": \"{{todayDate}}\",\n  \"endDate\": \"{{tomorrowDate}}\",\n  \"customerId\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Bookings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Bookings"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });",
+              "pm.test('Validation message is returned', function () { pm.expect(pm.response.text()).to.include('The start date cannot be in the past or later than the end date.'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create booking - start date in past",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"startDate\": \"{{yesterdayDate}}\",\n  \"endDate\": \"{{futureDate}}\",\n  \"customerId\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Bookings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Bookings"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create booking - start date after end date",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"startDate\": \"{{reverseStartDate}}\",\n  \"endDate\": \"{{reverseEndDate}}\",\n  \"customerId\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/Bookings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "Bookings"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const today = new Date();",
+          "function formatDate(d) { return d.toISOString(); }",
+          "function addDays(base, days) { const d = new Date(base); d.setDate(d.getDate() + days); return d; }",
+          "pm.collectionVariables.set('todayDate', formatDate(today));",
+          "pm.collectionVariables.set('tomorrowDate', formatDate(addDays(today, 1)));",
+          "pm.collectionVariables.set('yesterdayDate', formatDate(addDays(today, -1)));",
+          "pm.collectionVariables.set('futureDate', formatDate(addDays(today, 2)));",
+          "pm.collectionVariables.set('validStartDate', formatDate(addDays(today, 30)));",
+          "pm.collectionVariables.set('validEndDate', formatDate(addDays(today, 31)));",
+          "pm.collectionVariables.set('occupiedStartDate', formatDate(addDays(today, 5)));",
+          "pm.collectionVariables.set('occupiedEndDate', formatDate(addDays(today, 6)));",
+          "pm.collectionVariables.set('reverseStartDate', formatDate(addDays(today, 10)));",
+          "pm.collectionVariables.set('reverseEndDate', formatDate(addDays(today, 9)));"
+        ]
+      }
+    }
+  ]
+}
